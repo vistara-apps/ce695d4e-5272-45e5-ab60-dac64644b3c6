@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useMiniKit } from '@coinbase/minikit';
-import { PromptInput } from '../components/PromptInput';
-import { StyleSelector } from '../components/StyleSelector';
-import { GeneratedImageDisplay } from '../components/GeneratedImageDisplay';
-import { CreditCounter } from '../components/CreditCounter';
-import { RefineControls } from '../components/RefineControls';
-import { Header } from '../components/Header';
-import { generateImage } from '../lib/ai-service';
+import { useOnchainKit } from '@coinbase/onchainkit';
+import { PromptInput } from '@/components/PromptInput';
+import { StyleSelector } from '@/components/StyleSelector';
+import { GeneratedImageDisplay } from '@/components/GeneratedImageDisplay';
+import { CreditCounter } from '@/components/CreditCounter';
+import { RefineControls } from '@/components/RefineControls';
+import { Header } from '@/components/Header';
+import { generateImage } from '@/lib/ai-service';
 
 interface Generation {
   id: string;
@@ -19,7 +19,9 @@ interface Generation {
 }
 
 export default function HomePage() {
-  const { user } = useMiniKit();
+  const onchainKit = useOnchainKit();
+  // For now, we'll mock the user since MiniKit functionality might not be available
+  const user = { displayName: 'Demo User' }; // TODO: Replace with actual user context when available
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('modern');
   const [isGenerating, setIsGenerating] = useState(false);
