@@ -1,9 +1,11 @@
 'use client';
 
-import { useMiniKit } from '@coinbase/minikit';
+import { useOnchainKit } from '@coinbase/onchainkit';
 
 export function Header() {
-  const { user } = useMiniKit();
+  const onchainKit = useOnchainKit();
+  // For now, we'll mock the user since MiniKit functionality might not be available
+  const user = { displayName: 'Demo User' }; // TODO: Replace with actual user context when available
 
   return (
     <header className="bg-surface border-b border-gray-200 px-4 py-4">
