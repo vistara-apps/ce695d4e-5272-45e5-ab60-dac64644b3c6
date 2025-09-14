@@ -1,0 +1,14 @@
+{
+  "name": "StyleMuse AI",
+  "description": "StyleMuse AI is a Base Mini App built with Zara.",
+  "image": "https://dummyimage.com/1200x628/0a0b0d/ffffff.png&text=OG",
+  "external_url": "https://ce695d4e-5272-45e5-ab60-dac64644b3c6.vercel.app",
+  "properties": {
+    "app": {
+      "name": "StyleMuse AI",
+      "description": "StyleMuse AI is a Base Mini App built with Zara.",
+      "url": "https://ce695d4e-5272-45e5-ab60-dac64644b3c6.vercel.app",
+      "icon": "https://0co.to/images/zara-2.png"
+    }
+  }
+}

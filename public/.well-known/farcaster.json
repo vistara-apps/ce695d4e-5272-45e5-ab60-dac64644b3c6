@@ -1,0 +1,30 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "StyleMuse AI",
+    "subtitle": "Built with Zara",
+    "description": "StyleMuse AI is a Base Mini App built with Zara.",
+    "iconUrl": "https://0co.to/images/zara-2.png",
+    "homeUrl": "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app",
+    "splashImageUrl": "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "heroImageUrl": "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app/image.png",
+    "tagline": "StyleMuse AI",
+    "screenshotUrls": [
+      "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app/screenshot.png",
+      "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app/screenshot.png"
+    ],
+    "primaryCategory": "social",
+    "tags": [
+      "base",
+      "miniapp",
+      "onchainkit"
+    ],
+    "webhookUrl": "https://ce695d4e527245e5ab60dac64644b3c6-k1ag.vercel.app/api/webhook"
+  }
+}
