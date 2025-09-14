@@ -15,10 +15,11 @@ A MiniApp for Farcaster users to generate unique, on-trend visual assets using A
 ## Tech Stack
 
 - **Framework**: Next.js 15 with App Router
+- **Database**: PostgreSQL with Prisma ORM
 - **Styling**: Tailwind CSS with custom design tokens
-- **Blockchain**: Base network integration via MiniKit
-- **Wallet**: OnchainKit for wallet functionality
-- **AI**: OpenAI integration for image generation
+- **Blockchain**: Base network integration via OnchainKit
+- **AI**: OpenAI DALL-E integration for image generation
+- **Authentication**: JWT-based user authentication
 - **TypeScript**: Full type safety throughout
 
 ## Getting Started
@@ -38,11 +39,19 @@ A MiniApp for Farcaster users to generate unique, on-trend visual assets using A
    ```bash
    cp .env.example .env.local
    ```
-   
-   Fill in your API keys:
-   - `NEXT_PUBLIC_MINIKIT_API_KEY`: Your MiniKit API key
-   - `NEXT_PUBLIC_ONCHAINKIT_API_KEY`: Your OnchainKit API key  
+
+   Fill in your configuration:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `NEXT_PUBLIC_ONCHAINKIT_API_KEY`: Your OnchainKit API key
    - `OPENAI_API_KEY`: Your OpenAI API key
+   - `JWT_SECRET`: Secret key for JWT authentication
+   - `NEXT_PUBLIC_BASE_URL`: Your app's base URL
+
+4. **Set up the database**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
 4. **Run the development server**
    ```bash
@@ -58,14 +67,22 @@ A MiniApp for Farcaster users to generate unique, on-trend visual assets using A
 app/
 ├── layout.tsx          # Root layout with providers
 ├── page.tsx           # Main application page
-├── providers.tsx      # MiniKit and OnchainKit providers
+├── providers.tsx      # OnchainKit providers
 ├── globals.css        # Global styles and Tailwind imports
-├── loading.tsx        # Loading UI component
-├── error.tsx          # Error boundary component
 ├── api/
-│   ├── frame/         # Frame API endpoints
-│   └── generate/      # Image generation API
-└── manifest.json      # Mini App manifest
+│   ├── generate/      # Image generation API
+│   └── frame/         # Farcaster Frame API endpoints
+│       ├── route.ts
+│       ├── generate/
+│       ├── gallery/
+│       ├── share/
+│       └── cast/
+├── frame/             # Frame pages for different states
+│   ├── generate/
+│   ├── gallery/
+│   └── ...
+└── prisma/
+    └── schema.prisma  # Database schema
 
 components/
 ├── Header.tsx         # App header with branding
@@ -76,7 +93,9 @@ components/
 └── RefineControls.tsx # Image refinement tools
 
 lib/
-├── ai-service.ts      # AI image generation service
+├── db.ts              # Prisma database client
+├── auth.ts            # Authentication utilities
+├── ai-service.ts      # OpenAI image generation service
 ├── types.ts           # TypeScript type definitions
 └── utils.ts           # Utility functions
 ```
@@ -105,15 +124,30 @@ The app uses a custom design system with the following tokens:
 
 ## API Integration
 
+### Database
+- **Prisma ORM**: Type-safe database operations with PostgreSQL
+- **User Management**: Farcaster ID-based authentication
+- **Credit System**: Transaction logging and balance management
+- **Generation History**: Persistent storage of all user creations
+
 ### Image Generation
-The app integrates with OpenAI's DALL-E API for image generation. The service enhances user prompts with style-specific keywords to improve generation quality.
+The app integrates with OpenAI's DALL-E 3 API for high-quality image generation. The service:
+- Enhances user prompts with style-specific keywords
+- Supports multiple design styles (modern, minimal, vintage, etc.)
+- Handles API errors gracefully with fallback options
+- Validates prompt length and content
+
+### Authentication
+- **JWT-based**: Secure token authentication for API endpoints
+- **Farcaster Integration**: User identification via Farcaster ID
+- **Credit Management**: Automatic credit deduction and transaction logging
 
 ### Frame Actions
 Supports Farcaster Frame protocol for in-frame interactions:
-- Generate new assets
-- Select styles
-- Refine designs
-- Save and share creations
+- Generate new assets with credit validation
+- Browse user gallery with recent creations
+- Share designs directly to Farcaster
+- Interactive prompt input and style selection
 
 ## Deployment
 

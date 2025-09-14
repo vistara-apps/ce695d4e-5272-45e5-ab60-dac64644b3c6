@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useMiniKit } from '@coinbase/minikit';
 import { PromptInput } from '../components/PromptInput';
 import { StyleSelector } from '../components/StyleSelector';
 import { GeneratedImageDisplay } from '../components/GeneratedImageDisplay';
 import { CreditCounter } from '../components/CreditCounter';
 import { RefineControls } from '../components/RefineControls';
 import { Header } from '../components/Header';
-import { generateImage } from '../lib/ai-service';
+import { AuthUser, authenticateUser, deductCredits } from '../lib/auth';
 
 interface Generation {
   id: string;
@@ -19,22 +18,40 @@ interface Generation {
 }
 
 export default function HomePage() {
-  const { user } = useMiniKit();
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('modern');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentGeneration, setCurrentGeneration] = useState<Generation | null>(null);
-  const [credits, setCredits] = useState(10); // Default credits for demo
   const [showRefineControls, setShowRefineControls] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
+
+  // Mock Farcaster authentication for demo
+  useEffect(() => {
+    const mockFarcasterId = 'demo-user-123'; // In production, get from Farcaster
+    authenticateUser(mockFarcasterId).then((authUser) => {
+      setUser(authUser);
+      setIsAuthenticating(false);
+    }).catch((err) => {
+      console.error('Authentication failed:', err);
+      setError('Failed to authenticate user');
+      setIsAuthenticating(false);
+    });
+  }, []);
 
   const handleGenerate = async () => {
+    if (!user) {
+      setError('Please authenticate first');
+      return;
+    }
+
     if (!prompt.trim()) {
       setError('Please enter a prompt to generate an image');
       return;
     }
 
-    if (credits <= 0) {
+    if (user.creditsBalance <= 0) {
       setError('Insufficient credits. Please purchase more credits to continue.');
       return;
     }
@@ -43,21 +60,31 @@ export default function HomePage() {
     setError(null);
 
     try {
-      const imageUrl = await generateImage(prompt, selectedStyle);
-      
-      const newGeneration: Generation = {
-        id: Date.now().toString(),
-        prompt,
-        style: selectedStyle,
-        imageUrl,
-        createdAt: new Date(),
-      };
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          style: selectedStyle,
+          userId: user.id,
+        }),
+      });
 
-      setCurrentGeneration(newGeneration);
-      setCredits(prev => prev - 1);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate image');
+      }
+
+      const data = await response.json();
+      setCurrentGeneration(data.generation);
+
+      // Update local user credits
+      setUser(prev => prev ? { ...prev, creditsBalance: prev.creditsBalance - 1 } : null);
       setShowRefineControls(false);
     } catch (err) {
-      setError('Failed to generate image. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to generate image. Please try again.');
       console.error('Generation error:', err);
     } finally {
       setIsGenerating(false);
@@ -98,13 +125,40 @@ export default function HomePage() {
     alert('Design saved to your collection!');
   };
 
+  if (isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-primary">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-text-primary mb-4">Failed to authenticate. Please refresh the page.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-primary text-white px-4 py-2 rounded-md"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg">
       <Header />
-      
+
       <div className="px-4 py-6 max-w-md mx-auto space-y-6">
         {/* Credits Display */}
-        <CreditCounter credits={credits} />
+        <CreditCounter credits={user.creditsBalance} />
 
         {/* Main Generation Interface */}
         <div className="bg-surface rounded-lg p-6 shadow-card space-y-4">
@@ -138,7 +192,7 @@ export default function HomePage() {
 
           <button
             onClick={handleGenerate}
-            disabled={isGenerating || !prompt.trim() || credits <= 0}
+            disabled={isGenerating || !prompt.trim() || user.creditsBalance <= 0}
             className="w-full bg-primary text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {isGenerating ? (
@@ -147,7 +201,7 @@ export default function HomePage() {
                 <span>Generating...</span>
               </div>
             ) : (
-              `Generate Asset (${credits} credits)`
+              `Generate Asset (${user.creditsBalance} credits)`
             )}
           </button>
         </div>
